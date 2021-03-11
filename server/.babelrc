@@ -1,0 +1,13 @@
+{
+  "presets": [["@babel/preset-env", {
+    "targets": {
+      "node": 4
+    }
+  }], "@babel/preset-typescript"],
+  "plugins": [["module-resolver", {
+      "root": ["."],
+      "alias": {
+        "hello": "./dist/hello"
+      }
+    }], "@babel/plugin-transform-runtime"]
+}
