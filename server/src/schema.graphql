@@ -1,0 +1,74 @@
+type User {
+  id: ID!
+  username: String!
+  poems: [Poem!]!
+}
+
+type Token {
+  token: String!
+}
+
+type Poem {
+  title: String!
+  content: String!
+  isPrivate: Boolean!
+  author: User!
+}
+
+type BookBase {
+  id: String!
+  title: String!
+  authors: [String!]
+  coverPhoto: String!
+  language: String!
+  averageRating: Int!
+}
+
+type BookPrice {
+  amount: Float!
+  currencyCode: String!
+}
+
+type BookImages {
+  smallThumbnail: String
+  thumbnail: String
+  small: String
+  medium: String
+  large: String
+  extraLarge: String
+}
+
+type Book {
+  id: String!
+  title: String!
+  authors: [String!]
+  coverPhoto: String!
+  language: String!
+  averageRating: Int!
+  etag: String!
+  publisher: String!
+  publishedDate: String!
+  description: String!
+  pageCount: Int!
+  printType: String!
+  mainCategory: String!
+  categories: [String!]
+  ratingsCount: Int!
+  images: BookImages!
+  isEbook: Boolean!
+  listPrice: BookPrice!
+}
+
+type Query {
+  searchBook(searchString: String): [BookBase]
+  getBookByID(id: String): Book
+  getCurrentUser: User!
+  getUserByID(userID: ID!): User!
+  login(username: String!, password: String!): Token!
+  getPoemByID(poemID: ID!): Poem!
+}
+
+type Mutation {
+  createUser(username: String!, password: String!): Token!
+  createPoem(title: String!, content: String!, isPrivate: Boolean): Poem!
+}

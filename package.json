@@ -1,0 +1,16 @@
+{
+  "name": "client-server-wrapper",
+  "version": "1.0.0",
+  "description": "Client and Server Wrapper",
+  "main": "index.js",
+  "scripts": {
+    "start": "concurrently \"cd server && yarn dev-start\" \"cd client && yarn start\"",
+    "install-all": "yarn && concurrently \"yarn\" \"cd server && yarn\" \"cd client && yarn\"",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Erik Rahm",
+  "license": "ISC",
+  "dependencies": {
+    "concurrently": "^5.3.0"
+  }
+}

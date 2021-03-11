@@ -1,0 +1,19 @@
+{
+"compilerOptions": {
+  "module": "commonjs",
+  "target": "es2016",
+  "moduleResolution": "Node",
+  "noImplicitAny": true,
+  "removeComments": true,
+  "preserveConstEnums": true,
+  "sourceMap": true,
+  "esModuleInterop": true,
+  "declaration": true,
+  "emitDeclarationOnly": false,
+  "isolatedModules": true,
+  "typeRoots": ["./types"]
+},
+"mergeReferences": true,
+"include": ["src/**/*", "types/index.d.ts"],
+"exclude": ["node_modules", "**/*.spec.ts"]
+}
