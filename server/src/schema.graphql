@@ -66,6 +66,7 @@ type Query {
   getUserByID(userID: ID!): User!
   login(username: String!, password: String!): Token!
   getPoemByID(poemID: ID!): Poem!
+  checkUsernameAvailability(username: String!): Boolean!
 }
 
 type Mutation {

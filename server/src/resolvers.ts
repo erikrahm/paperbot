@@ -71,6 +71,14 @@ export const resolvers: Resolvers = {
 
       return user;
     },
+    checkUsernameAvailability: async (
+      _,
+      { username },
+      { models: { userModel } }
+    ) => {
+      const userExists = await userModel.findOne({ username }).exec();
+      return !userExists;
+    },
   },
   Mutation: {
     createUser: async (

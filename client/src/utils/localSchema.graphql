@@ -1,0 +1,16 @@
+type User {
+  id: ID
+  username: String
+  poems: [Poem]
+}
+
+type Poem {
+  title: String!
+  content: String!
+  isPrivate: Boolean!
+  author: User!
+}
+
+type Query {
+  currentUser: User!
+}

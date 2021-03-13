@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Redirect } from "react-router-dom";
+import { Redirect, Link } from "react-router-dom";
 import { Formik, Field, ErrorMessage } from "formik";
 import { isNil } from "lodash";
 import { gql, useLazyQuery } from "@apollo/client";
@@ -19,10 +19,14 @@ const LOGIN_QUERY = gql`
 const Login: React.FC = () => {
   const [succesfulLogin, updateSucessfulLogin] = useState(false);
   const isMount = useIsMount();
-  const [fireLogin, { loading, error, data }] = useLazyQuery<
+  const [fireLogin, { client, loading, error, data }] = useLazyQuery<
     LoginQuery,
     QueryLoginArgs
   >(LOGIN_QUERY);
+
+  useEffect(() => {
+    client?.resetStore();
+  });
 
   useEffect(() => {
     if (!isNil(data?.login.token) && !isMount) {
@@ -55,7 +59,7 @@ const Login: React.FC = () => {
           <form onSubmit={handleSubmit}>
             <label>
               <span>Username</span>
-              <Field type="test" name="username" placeholder="Username" />
+              <Field type="text" name="username" placeholder="Username" />
               <ErrorMessage name="username" />
             </label>
             <label>
@@ -67,6 +71,9 @@ const Login: React.FC = () => {
           </form>
         )}
       </Formik>
+      <div>
+        <Link to="/registration">- Or Register a New Account -</Link>
+      </div>
     </div>
   );
 };

@@ -56,7 +56,9 @@ const CURRENT_USER_QUERY = gql`
 
 const CACHED_USER_QUERY = gql`
   query CurrentCachedUser {
-    currentUser @client
+    currentUser @client {
+      username
+    }
   }
 `;
 

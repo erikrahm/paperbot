@@ -1,5 +1,8 @@
 module.exports = {
-  schema: [process.env.GRAPHQL_URL || "http://localhost:4000/graphql"],
+  schema: [
+    process.env.GRAPHQL_URL || "http://localhost:4000/graphql",
+    "./src/utils/localSchema.graphql",
+  ],
   documents: ["./src/**/*.tsx", "./src/**/*.ts"],
   overwrite: true,
   generates: {

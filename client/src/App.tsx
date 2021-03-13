@@ -6,6 +6,7 @@ import Wrapper from "./components/Wrapper";
 import Home from "./components/Home";
 import Haiku from "./components/Haiku";
 import Login from "./components/Login";
+import Registration from "./components/Registration";
 
 const App = () => {
   return (
@@ -13,6 +14,7 @@ const App = () => {
       <BrowserRouter>
         <Switch>
           <Route exact path="/login" component={Login} />
+          <Route exact path="/registration" component={Registration} />
           <Wrapper>
             <AuthRoute exact path="/">
               <Home />

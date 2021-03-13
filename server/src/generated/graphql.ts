@@ -89,6 +89,7 @@ export type Query = {
   getUserByID: User;
   login: Token;
   getPoemByID: Poem;
+  checkUsernameAvailability: Scalars['Boolean'];
 };
 
 
@@ -115,6 +116,11 @@ export type QueryLoginArgs = {
 
 export type QueryGetPoemByIdArgs = {
   poemID: Scalars['ID'];
+};
+
+
+export type QueryCheckUsernameAvailabilityArgs = {
+  username: Scalars['String'];
 };
 
 export type Mutation = {
@@ -323,6 +329,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   getUserByID?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<QueryGetUserByIdArgs, 'userID'>>;
   login?: Resolver<ResolversTypes['Token'], ParentType, ContextType, RequireFields<QueryLoginArgs, 'username' | 'password'>>;
   getPoemByID?: Resolver<ResolversTypes['Poem'], ParentType, ContextType, RequireFields<QueryGetPoemByIdArgs, 'poemID'>>;
+  checkUsernameAvailability?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<QueryCheckUsernameAvailabilityArgs, 'username'>>;
 };
 
 export type MutationResolvers<ContextType = any, ParentType extends ResolversParentTypes['Mutation'] = ResolversParentTypes['Mutation']> = {
