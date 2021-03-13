@@ -25,7 +25,6 @@ const Login: React.FC = () => {
   >(LOGIN_QUERY);
 
   useEffect(() => {
-    console.log(data);
     if (!isNil(data?.login.token) && !isMount) {
       localStorage.setItem("token", `${data?.login.token}`);
       updateSucessfulLogin(true);
@@ -33,8 +32,10 @@ const Login: React.FC = () => {
   }, [data, isMount]);
 
   if (succesfulLogin) return <Redirect to={{ pathname: "/" }} />;
-  console.log(JSON.stringify(error, null, 2));
-  if (error) return <p>Error :(</p>;
+  if (error) {
+    console.log(JSON.stringify(error, null, 2));
+    return <p>Error :(</p>;
+  }
   if (loading) return <p>Loading :P</p>;
 
   return (

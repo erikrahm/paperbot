@@ -33,14 +33,14 @@ const Person: React.FC = () => {
     }
   }, [searchTerm, previousSearchTerm, fireSearch]);
 
-  console.log(error);
-  if (error) return <p>Error :(</p>;
+  if (error) {
+    console.log(JSON.stringify(error, null, 2));
+    return <p>Error :(</p>;
+  }
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     updateSearchTerm(event.currentTarget.value);
   };
-
-  console.log("DATA: ", data, hasBooks);
 
   return (
     <div>
