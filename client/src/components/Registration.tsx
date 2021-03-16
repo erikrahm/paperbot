@@ -14,10 +14,12 @@ import { useIsMount } from "../utils/hooks";
 import { RegisterValidation } from "../utils/validation";
 
 const REGISTRATION_MUTATION = gql`
-  mutation RegistrationMutation($username: String!, $password: String!) {
-    createUser(username: $username, password: $password) {
-      token
-    }
+  mutation RegistrationMutation(
+    $username: String!
+    $password: String!
+    $email: String!
+  ) {
+    createUser(username: $username, password: $password, email: $email)
   }
 `;
 
@@ -49,8 +51,8 @@ const Registration: React.FC = () => {
   }, [usernameData, isMount]);
 
   useEffect(() => {
-    if (!isNil(data?.createUser.token) && !isMount) {
-      localStorage.setItem("token", `${data?.createUser.token}`);
+    if (!isNil(data?.createUser) && !isMount) {
+      localStorage.setItem("token", `${data?.createUser}`);
       updateSucessfulLogin(true);
     }
   }, [data, isMount]);
@@ -82,19 +84,25 @@ const Registration: React.FC = () => {
       <h1>Registration</h1>
       <Formik
         initialValues={{
+          email: "",
           username: "",
           password: "",
           confirmPassword: "",
         }}
-        onSubmit={({ username, password }) => {
+        onSubmit={({ username, password, email }) => {
           fireRegistration({
-            variables: { username: username, password: password },
+            variables: { username: username, password: password, email: email },
           });
         }}
         validationSchema={RegisterValidation}
       >
-        {({ handleSubmit, validateField }) => (
+        {({ handleSubmit }) => (
           <form onSubmit={handleSubmit}>
+            <label>
+              <span>Email</span>
+              <Field type="email" name="email" placeholder="Email" />
+              <ErrorMessage name="username" />
+            </label>
             <label>
               <span>Username</span>
               <Field

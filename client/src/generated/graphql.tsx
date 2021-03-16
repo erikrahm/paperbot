@@ -18,22 +18,23 @@ export type Scalars = {
 
 export type User = {
   __typename?: 'User';
-  id: Scalars['ID'];
-  poems: Array<Poem>;
+  _id: Scalars['ID'];
+  createdAt: Scalars['String'];
+  email: Scalars['String'];
   username: Scalars['String'];
-};
-
-export type Token = {
-  __typename?: 'Token';
-  token: Scalars['String'];
 };
 
 export type Poem = {
   __typename?: 'Poem';
-  author: User;
+  _id: Scalars['ID'];
+  title: Scalars['String'];
   content: Scalars['String'];
   isPrivate: Scalars['Boolean'];
-  title: Scalars['String'];
+  authorID: Scalars['String'];
+  author: Scalars['String'];
+  createdAt: Scalars['String'];
+  lastUpdated?: Maybe<Scalars['String']>;
+  compliments: Scalars['Int'];
 };
 
 export type BookBase = {
@@ -91,8 +92,9 @@ export type Query = {
   getBookByID?: Maybe<Book>;
   getCurrentUser: User;
   getPoemByID: Poem;
+  getPoemsByAuthor?: Maybe<Array<Poem>>;
   getUserByID: User;
-  login: Token;
+  login: Scalars['String'];
   searchBook?: Maybe<Array<Maybe<BookBase>>>;
 };
 
@@ -109,6 +111,11 @@ export type QueryGetBookByIdArgs = {
 
 export type QueryGetPoemByIdArgs = {
   poemID: Scalars['ID'];
+};
+
+
+export type QueryGetPoemsByAuthorArgs = {
+  authorID?: Maybe<Scalars['ID']>;
 };
 
 
@@ -129,14 +136,17 @@ export type QuerySearchBookArgs = {
 
 export type Mutation = {
   __typename?: 'Mutation';
-  createUser: Token;
+  createUser: Scalars['String'];
   createPoem: Poem;
+  complimentPoem: Scalars['String'];
+  removePoemByID: Scalars['String'];
 };
 
 
 export type MutationCreateUserArgs = {
   username: Scalars['String'];
   password: Scalars['String'];
+  email: Scalars['String'];
 };
 
 
@@ -144,6 +154,17 @@ export type MutationCreatePoemArgs = {
   title: Scalars['String'];
   content: Scalars['String'];
   isPrivate?: Maybe<Scalars['Boolean']>;
+  id?: Maybe<Scalars['ID']>;
+};
+
+
+export type MutationComplimentPoemArgs = {
+  poemID: Scalars['ID'];
+};
+
+
+export type MutationRemovePoemByIdArgs = {
+  poemID: Scalars['ID'];
 };
 
 export enum CacheControlScope {
@@ -151,6 +172,48 @@ export enum CacheControlScope {
   Private = 'PRIVATE'
 }
 
+
+export type GetHaikuQueryVariables = Exact<{
+  poemID: Scalars['ID'];
+}>;
+
+
+export type GetHaikuQuery = (
+  { __typename?: 'Query' }
+  & { getPoemByID: (
+    { __typename?: 'Poem' }
+    & Pick<Poem, '_id' | 'title' | 'content' | 'author' | 'isPrivate'>
+  ) }
+);
+
+export type SaveHaikuMutationVariables = Exact<{
+  title: Scalars['String'];
+  content: Scalars['String'];
+  isPrivate: Scalars['Boolean'];
+  id?: Maybe<Scalars['ID']>;
+}>;
+
+
+export type SaveHaikuMutation = (
+  { __typename?: 'Mutation' }
+  & { createPoem: (
+    { __typename?: 'Poem' }
+    & Pick<Poem, '_id'>
+  ) }
+);
+
+export type GetPoemsByAuthorQueryVariables = Exact<{
+  authorID: Scalars['ID'];
+}>;
+
+
+export type GetPoemsByAuthorQuery = (
+  { __typename?: 'Query' }
+  & { getPoemsByAuthor?: Maybe<Array<(
+    { __typename?: 'Poem' }
+    & Pick<Poem, '_id' | 'title' | 'content' | 'author' | 'isPrivate' | 'createdAt'>
+  )>> }
+);
 
 export type LoginQueryQueryVariables = Exact<{
   username: Scalars['String'];
@@ -160,10 +223,7 @@ export type LoginQueryQueryVariables = Exact<{
 
 export type LoginQueryQuery = (
   { __typename?: 'Query' }
-  & { login: (
-    { __typename?: 'Token' }
-    & Pick<Token, 'token'>
-  ) }
+  & Pick<Query, 'login'>
 );
 
 export type AutocompleteSearchQueryVariables = Exact<{
@@ -182,15 +242,13 @@ export type AutocompleteSearchQuery = (
 export type RegistrationMutationMutationVariables = Exact<{
   username: Scalars['String'];
   password: Scalars['String'];
+  email: Scalars['String'];
 }>;
 
 
 export type RegistrationMutationMutation = (
   { __typename?: 'Mutation' }
-  & { createUser: (
-    { __typename?: 'Token' }
-    & Pick<Token, 'token'>
-  ) }
+  & Pick<Mutation, 'createUser'>
 );
 
 export type UsernameQueryQueryVariables = Exact<{
@@ -210,27 +268,124 @@ export type CurrentUserQuery = (
   { __typename?: 'Query' }
   & { getCurrentUser: (
     { __typename?: 'User' }
-    & Pick<User, 'username'>
-  ) }
-);
-
-export type CurrentCachedUserQueryVariables = Exact<{ [key: string]: never; }>;
-
-
-export type CurrentCachedUserQuery = (
-  { __typename?: 'Query' }
-  & { currentUser: (
-    { __typename?: 'User' }
-    & Pick<User, 'username'>
+    & Pick<User, '_id' | 'username' | 'email'>
   ) }
 );
 
 
+export const GetHaikuDocument = gql`
+    query GetHaiku($poemID: ID!) {
+  getPoemByID(poemID: $poemID) {
+    _id
+    title
+    content
+    author
+    isPrivate
+  }
+}
+    `;
+
+/**
+ * __useGetHaikuQuery__
+ *
+ * To run a query within a React component, call `useGetHaikuQuery` and pass it any options that fit your needs.
+ * When your component renders, `useGetHaikuQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useGetHaikuQuery({
+ *   variables: {
+ *      poemID: // value for 'poemID'
+ *   },
+ * });
+ */
+export function useGetHaikuQuery(baseOptions: Apollo.QueryHookOptions<GetHaikuQuery, GetHaikuQueryVariables>) {
+        return Apollo.useQuery<GetHaikuQuery, GetHaikuQueryVariables>(GetHaikuDocument, baseOptions);
+      }
+export function useGetHaikuLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<GetHaikuQuery, GetHaikuQueryVariables>) {
+          return Apollo.useLazyQuery<GetHaikuQuery, GetHaikuQueryVariables>(GetHaikuDocument, baseOptions);
+        }
+export type GetHaikuQueryHookResult = ReturnType<typeof useGetHaikuQuery>;
+export type GetHaikuLazyQueryHookResult = ReturnType<typeof useGetHaikuLazyQuery>;
+export type GetHaikuQueryResult = Apollo.QueryResult<GetHaikuQuery, GetHaikuQueryVariables>;
+export const SaveHaikuDocument = gql`
+    mutation SaveHaiku($title: String!, $content: String!, $isPrivate: Boolean!, $id: ID) {
+  createPoem(title: $title, content: $content, isPrivate: $isPrivate, id: $id) {
+    _id
+  }
+}
+    `;
+export type SaveHaikuMutationFn = Apollo.MutationFunction<SaveHaikuMutation, SaveHaikuMutationVariables>;
+
+/**
+ * __useSaveHaikuMutation__
+ *
+ * To run a mutation, you first call `useSaveHaikuMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useSaveHaikuMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [saveHaikuMutation, { data, loading, error }] = useSaveHaikuMutation({
+ *   variables: {
+ *      title: // value for 'title'
+ *      content: // value for 'content'
+ *      isPrivate: // value for 'isPrivate'
+ *      id: // value for 'id'
+ *   },
+ * });
+ */
+export function useSaveHaikuMutation(baseOptions?: Apollo.MutationHookOptions<SaveHaikuMutation, SaveHaikuMutationVariables>) {
+        return Apollo.useMutation<SaveHaikuMutation, SaveHaikuMutationVariables>(SaveHaikuDocument, baseOptions);
+      }
+export type SaveHaikuMutationHookResult = ReturnType<typeof useSaveHaikuMutation>;
+export type SaveHaikuMutationResult = Apollo.MutationResult<SaveHaikuMutation>;
+export type SaveHaikuMutationOptions = Apollo.BaseMutationOptions<SaveHaikuMutation, SaveHaikuMutationVariables>;
+export const GetPoemsByAuthorDocument = gql`
+    query GetPoemsByAuthor($authorID: ID!) {
+  getPoemsByAuthor(authorID: $authorID) {
+    _id
+    title
+    content
+    author
+    isPrivate
+    createdAt
+  }
+}
+    `;
+
+/**
+ * __useGetPoemsByAuthorQuery__
+ *
+ * To run a query within a React component, call `useGetPoemsByAuthorQuery` and pass it any options that fit your needs.
+ * When your component renders, `useGetPoemsByAuthorQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useGetPoemsByAuthorQuery({
+ *   variables: {
+ *      authorID: // value for 'authorID'
+ *   },
+ * });
+ */
+export function useGetPoemsByAuthorQuery(baseOptions: Apollo.QueryHookOptions<GetPoemsByAuthorQuery, GetPoemsByAuthorQueryVariables>) {
+        return Apollo.useQuery<GetPoemsByAuthorQuery, GetPoemsByAuthorQueryVariables>(GetPoemsByAuthorDocument, baseOptions);
+      }
+export function useGetPoemsByAuthorLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<GetPoemsByAuthorQuery, GetPoemsByAuthorQueryVariables>) {
+          return Apollo.useLazyQuery<GetPoemsByAuthorQuery, GetPoemsByAuthorQueryVariables>(GetPoemsByAuthorDocument, baseOptions);
+        }
+export type GetPoemsByAuthorQueryHookResult = ReturnType<typeof useGetPoemsByAuthorQuery>;
+export type GetPoemsByAuthorLazyQueryHookResult = ReturnType<typeof useGetPoemsByAuthorLazyQuery>;
+export type GetPoemsByAuthorQueryResult = Apollo.QueryResult<GetPoemsByAuthorQuery, GetPoemsByAuthorQueryVariables>;
 export const LoginQueryDocument = gql`
     query LoginQuery($username: String!, $password: String!) {
-  login(username: $username, password: $password) {
-    token
-  }
+  login(username: $username, password: $password)
 }
     `;
 
@@ -297,10 +452,8 @@ export type AutocompleteSearchQueryHookResult = ReturnType<typeof useAutocomplet
 export type AutocompleteSearchLazyQueryHookResult = ReturnType<typeof useAutocompleteSearchLazyQuery>;
 export type AutocompleteSearchQueryResult = Apollo.QueryResult<AutocompleteSearchQuery, AutocompleteSearchQueryVariables>;
 export const RegistrationMutationDocument = gql`
-    mutation RegistrationMutation($username: String!, $password: String!) {
-  createUser(username: $username, password: $password) {
-    token
-  }
+    mutation RegistrationMutation($username: String!, $password: String!, $email: String!) {
+  createUser(username: $username, password: $password, email: $email)
 }
     `;
 export type RegistrationMutationMutationFn = Apollo.MutationFunction<RegistrationMutationMutation, RegistrationMutationMutationVariables>;
@@ -320,6 +473,7 @@ export type RegistrationMutationMutationFn = Apollo.MutationFunction<Registratio
  *   variables: {
  *      username: // value for 'username'
  *      password: // value for 'password'
+ *      email: // value for 'email'
  *   },
  * });
  */
@@ -363,7 +517,9 @@ export type UsernameQueryQueryResult = Apollo.QueryResult<UsernameQueryQuery, Us
 export const CurrentUserDocument = gql`
     query CurrentUser {
   getCurrentUser {
+    _id
     username
+    email
   }
 }
     `;
@@ -392,35 +548,3 @@ export function useCurrentUserLazyQuery(baseOptions?: Apollo.LazyQueryHookOption
 export type CurrentUserQueryHookResult = ReturnType<typeof useCurrentUserQuery>;
 export type CurrentUserLazyQueryHookResult = ReturnType<typeof useCurrentUserLazyQuery>;
 export type CurrentUserQueryResult = Apollo.QueryResult<CurrentUserQuery, CurrentUserQueryVariables>;
-export const CurrentCachedUserDocument = gql`
-    query CurrentCachedUser {
-  currentUser @client {
-    username
-  }
-}
-    `;
-
-/**
- * __useCurrentCachedUserQuery__
- *
- * To run a query within a React component, call `useCurrentCachedUserQuery` and pass it any options that fit your needs.
- * When your component renders, `useCurrentCachedUserQuery` returns an object from Apollo Client that contains loading, error, and data properties
- * you can use to render your UI.
- *
- * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
- *
- * @example
- * const { data, loading, error } = useCurrentCachedUserQuery({
- *   variables: {
- *   },
- * });
- */
-export function useCurrentCachedUserQuery(baseOptions?: Apollo.QueryHookOptions<CurrentCachedUserQuery, CurrentCachedUserQueryVariables>) {
-        return Apollo.useQuery<CurrentCachedUserQuery, CurrentCachedUserQueryVariables>(CurrentCachedUserDocument, baseOptions);
-      }
-export function useCurrentCachedUserLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<CurrentCachedUserQuery, CurrentCachedUserQueryVariables>) {
-          return Apollo.useLazyQuery<CurrentCachedUserQuery, CurrentCachedUserQueryVariables>(CurrentCachedUserDocument, baseOptions);
-        }
-export type CurrentCachedUserQueryHookResult = ReturnType<typeof useCurrentCachedUserQuery>;
-export type CurrentCachedUserLazyQueryHookResult = ReturnType<typeof useCurrentCachedUserLazyQuery>;
-export type CurrentCachedUserQueryResult = Apollo.QueryResult<CurrentCachedUserQuery, CurrentCachedUserQueryVariables>;

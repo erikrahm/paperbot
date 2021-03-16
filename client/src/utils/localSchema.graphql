@@ -1,14 +1,8 @@
 type User {
-  id: ID
-  username: String
-  poems: [Poem]
-}
-
-type Poem {
-  title: String!
-  content: String!
-  isPrivate: Boolean!
-  author: User!
+  _id: ID!
+  username: String!
+  email: String!
+  createdAt: String!
 }
 
 type Query {

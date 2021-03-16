@@ -12,10 +12,7 @@ export interface AuthRequest extends Request {
 }
 
 export const signToken = (user: UserMongo, secret: string) => {
-  const token = jwt.sign({ id: user.id }, secret, {
+  return jwt.sign({ id: user._id, username: user.username }, secret, {
     expiresIn: 24 * 10 * 50,
   });
-  return {
-    token: token,
-  };
 };

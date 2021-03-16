@@ -1,18 +1,15 @@
 import bcrypt from "bcrypt";
 import { Schema, Document, model } from "mongoose";
 
-import { Poem } from "./poemModel";
-import { Crossword } from "./crosswordModel";
-
 export interface User {
   username: string;
   password: string;
-  poems: Poem[];
-  crosswords: Crossword[];
+  email: string;
+  createdAt: Date;
 }
 
 export interface UserMongo extends User {
-  id: string;
+  _id: string;
 }
 
 export interface UserDocument extends User, Document {}
@@ -27,18 +24,14 @@ const userSchema: Schema<UserDocument> = new Schema({
     type: String,
     required: true,
   },
-  poems: [
-    {
-      type: Schema.Types.ObjectId,
-      ref: "poem",
-    },
-  ],
-  crosswords: [
-    {
-      type: Schema.Types.ObjectId,
-      ref: "crossword",
-    },
-  ],
+  email: {
+    type: String,
+    required: true,
+  },
+  createdAt: {
+    type: Date,
+    required: true,
+  },
 });
 
 userSchema.pre("save", function () {

@@ -1,12 +1,12 @@
-import { useRef, useEffect } from 'react';
+import { useRef, useEffect } from "react";
 
-export const usePrevious = (value: string) => { 
-  const ref = useRef<string>();
+export const usePrevious = (value: any) => {
+  const ref = useRef<any>();
   useEffect(() => {
     ref.current = value;
   });
-  return ref.current as string;
-}
+  return ref.current;
+};
 
 export const useIsMount = () => {
   const isMountRef = useRef(true);

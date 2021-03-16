@@ -2,6 +2,11 @@ import React from "react";
 import styled from "styled-components";
 import { Colors } from "../../utils/constants";
 
+const ButtonLink = styled.a`
+  display: contents;
+  text-decoration: none;
+`;
+
 const StyledButton = styled.button`
   background: ${Colors.white};
   border: 1px solid ${Colors.blue};
@@ -31,9 +36,9 @@ const BaseButton: React.FC<ButtonProps> = ({ children, clickHandler }) => {
 
 const Button: React.FC<ButtonProps> = ({ children, href, clickHandler }) => {
   const wrappedButton = href ? (
-    <a href={href}>
+    <ButtonLink href={href}>
       <BaseButton clickHandler={clickHandler}>{children}</BaseButton>
-    </a>
+    </ButtonLink>
   ) : (
     <BaseButton clickHandler={clickHandler}>{children}</BaseButton>
   );

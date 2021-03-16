@@ -1,18 +1,20 @@
 type User {
-  id: ID!
+  _id: ID!
   username: String!
-  poems: [Poem!]!
-}
-
-type Token {
-  token: String!
+  email: String!
+  createdAt: String!
 }
 
 type Poem {
+  _id: ID!
   title: String!
   content: String!
   isPrivate: Boolean!
-  author: User!
+  authorID: String!
+  author: String!
+  createdAt: String!
+  lastUpdated: String
+  compliments: Int!
 }
 
 type BookBase {
@@ -64,12 +66,20 @@ type Query {
   getBookByID(id: String): Book
   getCurrentUser: User!
   getUserByID(userID: ID!): User!
-  login(username: String!, password: String!): Token!
+  login(username: String!, password: String!): String!
+  getPoemsByAuthor(authorID: ID): [Poem!]
   getPoemByID(poemID: ID!): Poem!
   checkUsernameAvailability(username: String!): Boolean!
 }
 
 type Mutation {
-  createUser(username: String!, password: String!): Token!
-  createPoem(title: String!, content: String!, isPrivate: Boolean): Poem!
+  createUser(username: String!, password: String!, email: String!): String!
+  createPoem(
+    title: String!
+    content: String!
+    isPrivate: Boolean
+    id: ID
+  ): Poem!
+  complimentPoem(poemID: ID!): String!
+  removePoemByID(poemID: ID!): String!
 }

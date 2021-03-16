@@ -7,11 +7,7 @@ const passwordLength = "Password must be at least 3 characters";
 const invalidEmail = "Email must be a valid Email";
 
 export const LoginValidation = Yup.object().shape({
-  username: Yup.string()
-    .min(3, emailLength)
-    .max(255)
-    // .email(invalidEmail)
-    .required(emailRequired),
+  username: Yup.string().min(3, emailLength).max(255).required(emailRequired),
   password: Yup.string()
     .min(3, passwordLength)
     .max(255)
@@ -19,6 +15,11 @@ export const LoginValidation = Yup.object().shape({
 });
 
 export const RegisterValidation = Yup.object().shape({
+  email: Yup.string()
+    .min(3, emailLength)
+    .max(255)
+    .email(invalidEmail)
+    .required(emailRequired),
   username: Yup.string()
     .min(3, "Username must be at least 3 characters")
     .required("Required"),

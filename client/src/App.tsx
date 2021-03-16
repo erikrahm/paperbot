@@ -22,6 +22,12 @@ const App = () => {
             <AuthRoute exact path="/haiku">
               <Haiku />
             </AuthRoute>
+            <AuthRoute exact path="/haiku/:poemID">
+              <Haiku />
+            </AuthRoute>
+            <AuthRoute exact path="/haiku/:poemID/edit">
+              <Haiku edit={true} />
+            </AuthRoute>
           </Wrapper>
         </Switch>
       </BrowserRouter>

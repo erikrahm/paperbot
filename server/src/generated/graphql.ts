@@ -15,22 +15,23 @@ export type Scalars = {
 
 export type User = {
   __typename?: 'User';
-  id: Scalars['ID'];
+  _id: Scalars['ID'];
   username: Scalars['String'];
-  poems: Array<Poem>;
-};
-
-export type Token = {
-  __typename?: 'Token';
-  token: Scalars['String'];
+  email: Scalars['String'];
+  createdAt: Scalars['String'];
 };
 
 export type Poem = {
   __typename?: 'Poem';
+  _id: Scalars['ID'];
   title: Scalars['String'];
   content: Scalars['String'];
   isPrivate: Scalars['Boolean'];
-  author: User;
+  authorID: Scalars['String'];
+  author: Scalars['String'];
+  createdAt: Scalars['String'];
+  lastUpdated?: Maybe<Scalars['String']>;
+  compliments: Scalars['Int'];
 };
 
 export type BookBase = {
@@ -87,7 +88,8 @@ export type Query = {
   getBookByID?: Maybe<Book>;
   getCurrentUser: User;
   getUserByID: User;
-  login: Token;
+  login: Scalars['String'];
+  getPoemsByAuthor?: Maybe<Array<Poem>>;
   getPoemByID: Poem;
   checkUsernameAvailability: Scalars['Boolean'];
 };
@@ -114,6 +116,11 @@ export type QueryLoginArgs = {
 };
 
 
+export type QueryGetPoemsByAuthorArgs = {
+  authorID?: Maybe<Scalars['ID']>;
+};
+
+
 export type QueryGetPoemByIdArgs = {
   poemID: Scalars['ID'];
 };
@@ -125,14 +132,17 @@ export type QueryCheckUsernameAvailabilityArgs = {
 
 export type Mutation = {
   __typename?: 'Mutation';
-  createUser: Token;
+  createUser: Scalars['String'];
   createPoem: Poem;
+  complimentPoem: Scalars['String'];
+  removePoemByID: Scalars['String'];
 };
 
 
 export type MutationCreateUserArgs = {
   username: Scalars['String'];
   password: Scalars['String'];
+  email: Scalars['String'];
 };
 
 
@@ -140,6 +150,17 @@ export type MutationCreatePoemArgs = {
   title: Scalars['String'];
   content: Scalars['String'];
   isPrivate?: Maybe<Scalars['Boolean']>;
+  id?: Maybe<Scalars['ID']>;
+};
+
+
+export type MutationComplimentPoemArgs = {
+  poemID: Scalars['ID'];
+};
+
+
+export type MutationRemovePoemByIdArgs = {
+  poemID: Scalars['ID'];
 };
 
 
@@ -223,11 +244,10 @@ export type ResolversTypes = {
   User: ResolverTypeWrapper<User>;
   ID: ResolverTypeWrapper<Scalars['ID']>;
   String: ResolverTypeWrapper<Scalars['String']>;
-  Token: ResolverTypeWrapper<Token>;
   Poem: ResolverTypeWrapper<Poem>;
   Boolean: ResolverTypeWrapper<Scalars['Boolean']>;
-  BookBase: ResolverTypeWrapper<BookBase>;
   Int: ResolverTypeWrapper<Scalars['Int']>;
+  BookBase: ResolverTypeWrapper<BookBase>;
   BookPrice: ResolverTypeWrapper<BookPrice>;
   Float: ResolverTypeWrapper<Scalars['Float']>;
   BookImages: ResolverTypeWrapper<BookImages>;
@@ -241,11 +261,10 @@ export type ResolversParentTypes = {
   User: User;
   ID: Scalars['ID'];
   String: Scalars['String'];
-  Token: Token;
   Poem: Poem;
   Boolean: Scalars['Boolean'];
-  BookBase: BookBase;
   Int: Scalars['Int'];
+  BookBase: BookBase;
   BookPrice: BookPrice;
   Float: Scalars['Float'];
   BookImages: BookImages;
@@ -255,22 +274,23 @@ export type ResolversParentTypes = {
 };
 
 export type UserResolvers<ContextType = any, ParentType extends ResolversParentTypes['User'] = ResolversParentTypes['User']> = {
-  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  _id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   username?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  poems?: Resolver<Array<ResolversTypes['Poem']>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
-};
-
-export type TokenResolvers<ContextType = any, ParentType extends ResolversParentTypes['Token'] = ResolversParentTypes['Token']> = {
-  token?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  email?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  createdAt?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
 export type PoemResolvers<ContextType = any, ParentType extends ResolversParentTypes['Poem'] = ResolversParentTypes['Poem']> = {
+  _id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   title?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   content?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   isPrivate?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
-  author?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
+  authorID?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  author?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  createdAt?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  lastUpdated?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  compliments?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
@@ -327,19 +347,21 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   getBookByID?: Resolver<Maybe<ResolversTypes['Book']>, ParentType, ContextType, RequireFields<QueryGetBookByIdArgs, never>>;
   getCurrentUser?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
   getUserByID?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<QueryGetUserByIdArgs, 'userID'>>;
-  login?: Resolver<ResolversTypes['Token'], ParentType, ContextType, RequireFields<QueryLoginArgs, 'username' | 'password'>>;
+  login?: Resolver<ResolversTypes['String'], ParentType, ContextType, RequireFields<QueryLoginArgs, 'username' | 'password'>>;
+  getPoemsByAuthor?: Resolver<Maybe<Array<ResolversTypes['Poem']>>, ParentType, ContextType, RequireFields<QueryGetPoemsByAuthorArgs, never>>;
   getPoemByID?: Resolver<ResolversTypes['Poem'], ParentType, ContextType, RequireFields<QueryGetPoemByIdArgs, 'poemID'>>;
   checkUsernameAvailability?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<QueryCheckUsernameAvailabilityArgs, 'username'>>;
 };
 
 export type MutationResolvers<ContextType = any, ParentType extends ResolversParentTypes['Mutation'] = ResolversParentTypes['Mutation']> = {
-  createUser?: Resolver<ResolversTypes['Token'], ParentType, ContextType, RequireFields<MutationCreateUserArgs, 'username' | 'password'>>;
+  createUser?: Resolver<ResolversTypes['String'], ParentType, ContextType, RequireFields<MutationCreateUserArgs, 'username' | 'password' | 'email'>>;
   createPoem?: Resolver<ResolversTypes['Poem'], ParentType, ContextType, RequireFields<MutationCreatePoemArgs, 'title' | 'content'>>;
+  complimentPoem?: Resolver<ResolversTypes['String'], ParentType, ContextType, RequireFields<MutationComplimentPoemArgs, 'poemID'>>;
+  removePoemByID?: Resolver<ResolversTypes['String'], ParentType, ContextType, RequireFields<MutationRemovePoemByIdArgs, 'poemID'>>;
 };
 
 export type Resolvers<ContextType = any> = {
   User?: UserResolvers<ContextType>;
-  Token?: TokenResolvers<ContextType>;
   Poem?: PoemResolvers<ContextType>;
   BookBase?: BookBaseResolvers<ContextType>;
   BookPrice?: BookPriceResolvers<ContextType>;

@@ -1,16 +1,15 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { gql, useLazyQuery } from "@apollo/client";
-import { useHistory } from "react-router-dom";
+import { useHistory, Link, Redirect } from "react-router-dom";
 import styled from "styled-components";
-import { isNil } from "lodash";
 import { createGlobalStyle } from "styled-components";
 
-import { Query as CurrentUserQuery } from "../generated/graphql";
+import { Query as CurrentUserQuery, User } from "../generated/graphql";
 import { checkAuth } from "../utils/authentication";
-import { userVar } from "../utils/cache";
 import { useIsMount } from "../utils/hooks";
 import Button from "./library/Button";
 import { Colors } from "../utils/constants";
+import { UserContext } from "../utils/userContext";
 
 const GlobalStyle = createGlobalStyle`
   body {
@@ -26,14 +25,18 @@ const Header = styled.header`
   padding: 25px 50px;
 `;
 
-const Logo = styled.h1`
-  font-family: "Permanent Marker", cursive;
-  font-size: 40px;
-  padding: 0;
-  margin: 0;
-  text-transform: uppercase;
-  letter-spacing: 3px;
-  color: ${Colors.blue};
+const Logo = styled(Link)`
+  text-decoration: none;
+
+  h1 {
+    font-family: "Permanent Marker", cursive;
+    font-size: 40px;
+    padding: 0;
+    margin: 0;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    color: ${Colors.blue};
+  }
 `;
 
 const ButtonWrapper = styled.div`
@@ -49,42 +52,37 @@ const Footer = styled.footer`
 const CURRENT_USER_QUERY = gql`
   query CurrentUser {
     getCurrentUser {
+      _id
       username
-    }
-  }
-`;
-
-const CACHED_USER_QUERY = gql`
-  query CurrentCachedUser {
-    currentUser @client {
-      username
+      email
     }
   }
 `;
 
 const Wrapper: React.FC = ({ children }) => {
+  const [userContextState, updateUserContextState] = useState<null | User>(
+    null
+  );
   const [
     fireCurrentUser,
     { loading, error, data },
   ] = useLazyQuery<CurrentUserQuery>(CURRENT_USER_QUERY);
-  const [fireCachedUser] = useLazyQuery(CACHED_USER_QUERY);
   const isFirstRender = useIsMount();
   const browserHistory = useHistory();
-  const currentUser = userVar();
-  const isLoggedIn = currentUser || data?.getCurrentUser;
+  const hasToken = checkAuth();
+  const isLoggedIn = data?.getCurrentUser && hasToken;
 
   useEffect(() => {
-    if (isNil(currentUser) && checkAuth() && isFirstRender) {
+    if (checkAuth() && isFirstRender) {
       fireCurrentUser();
     }
-  }, [currentUser, fireCurrentUser, isFirstRender]);
+  }, [fireCurrentUser, isFirstRender]);
 
   useEffect(() => {
-    if (data?.getCurrentUser.username) {
-      userVar(data.getCurrentUser);
-      fireCachedUser();
+    if (data?.getCurrentUser) {
+      updateUserContextState(data?.getCurrentUser);
     }
-  }, [data, fireCachedUser]);
+  }, [data]);
 
   if (error) {
     console.log(JSON.stringify(error, null, 2));
@@ -92,25 +90,36 @@ const Wrapper: React.FC = ({ children }) => {
   }
 
   const handleLogout = () => {
+    updateUserContextState(null);
     localStorage.clear();
     browserHistory.push("/login");
   };
 
-  console.log(currentUser);
+  if (!hasToken) {
+    return <Redirect to="/login" />;
+  }
 
   return !loading ? (
     <>
       <GlobalStyle />
       <Header>
-        <Logo>Paperbot</Logo>
-        <div>{currentUser?.username}</div>
+        <Logo to="/">
+          <h1>Paperbot</h1>
+        </Logo>
+        <div>{`${data?.getCurrentUser?.username} - ${data?.getCurrentUser?.email}`}</div>
         {isLoggedIn && (
           <ButtonWrapper>
             <Button clickHandler={handleLogout}>Logout</Button>
           </ButtonWrapper>
         )}
       </Header>
-      <main>{children}</main>
+      {data?.getCurrentUser && (
+        <UserContext.Provider
+          value={[userContextState, updateUserContextState]}
+        >
+          <main>{children}</main>
+        </UserContext.Provider>
+      )}
       <Footer></Footer>
     </>
   ) : (

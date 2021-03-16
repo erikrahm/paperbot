@@ -10,27 +10,21 @@ import { LoginValidation } from "../utils/validation";
 
 const LOGIN_QUERY = gql`
   query LoginQuery($username: String!, $password: String!) {
-    login(username: $username, password: $password) {
-      token
-    }
+    login(username: $username, password: $password)
   }
 `;
 
 const Login: React.FC = () => {
   const [succesfulLogin, updateSucessfulLogin] = useState(false);
   const isMount = useIsMount();
-  const [fireLogin, { client, loading, error, data }] = useLazyQuery<
+  const [fireLogin, { loading, error, data }] = useLazyQuery<
     LoginQuery,
     QueryLoginArgs
   >(LOGIN_QUERY);
 
   useEffect(() => {
-    client?.resetStore();
-  });
-
-  useEffect(() => {
-    if (!isNil(data?.login.token) && !isMount) {
-      localStorage.setItem("token", `${data?.login.token}`);
+    if (!isNil(data?.login) && !isMount) {
+      localStorage.setItem("token", `${data?.login}`);
       updateSucessfulLogin(true);
     }
   }, [data, isMount]);

@@ -3,7 +3,7 @@ import express from "express";
 import dotenv from "dotenv";
 import mongoose from "mongoose";
 import jwt from "jsonwebtoken";
-import { ApolloServer, gql, AuthenticationError } from "apollo-server-express";
+import { ApolloServer, gql } from "apollo-server-express";
 
 import { DataSource } from "./datasource";
 import { typeDefs } from "./graphql-schema";
@@ -31,8 +31,7 @@ const injectUser = async (req: AuthRequest) => {
       const user = await jwt.verify(token, SECRET);
       if (typeof user === "object") req.user = { ...user };
     } catch (error) {
-      console.error(error);
-      throw new AuthenticationError("Your session expired. Sign in again.");
+      console.error("FUKED", error);
     }
   }
   req.next();
@@ -53,7 +52,6 @@ const server = new ApolloServer({
   }),
   context: async ({ req }: { req: AuthRequest }) => {
     if (req) {
-      if (req.user) console.log("USER: ", req.user);
       return {
         models: Models,
         secret: SECRET,

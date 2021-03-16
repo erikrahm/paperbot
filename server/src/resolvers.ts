@@ -4,7 +4,11 @@ import {
   QuerySearchBookArgs,
   QueryGetBookByIdArgs,
 } from "./generated/graphql";
-import { IResolvers, AuthenticationError } from "apollo-server-express";
+import {
+  IResolvers,
+  AuthenticationError,
+  UserInputError,
+} from "apollo-server-express";
 import bcrypt from "bcrypt";
 import { isNil } from "lodash";
 
@@ -27,6 +31,52 @@ export const resolvers: Resolvers = {
     },
     getBookByID: (_, { id }: QueryGetBookByIdArgs, { dataSources }) =>
       dataSources.externalAPI.getBookByID(id),
+    getPoemsByAuthor: async (
+      _,
+      { authorID },
+      { models: { poemModel }, currentUser }
+    ) => {
+      const isAuthor = isNil(authorID) && currentUser?.id;
+      const author = isAuthor ? currentUser?.id : authorID;
+
+      if (!author) {
+        throw new AuthenticationError("User not authenticated.");
+      }
+
+      const filters = {
+        authorID: author,
+        removed: false,
+        ...(!isAuthor && { isPrivate: false }),
+      };
+
+      const poems = await poemModel.find(filters).exec();
+
+      if (!poems) {
+        return null;
+      }
+
+      return poems;
+    },
+    getPoemByID: async (
+      _,
+      { poemID },
+      { models: { poemModel }, currentUser }
+    ) => {
+      const poem = await poemModel
+        .findOne({
+          $or: [
+            { isPrivate: true, _id: poemID, authorID: currentUser.id },
+            { isPrivate: false, _id: poemID },
+          ],
+        })
+        .exec();
+
+      if (!poem) {
+        throw new UserInputError("Invalid Poem request.");
+      }
+
+      return poem;
+    },
     login: async (
       _,
       { username, password },
@@ -52,12 +102,11 @@ export const resolvers: Resolvers = {
           "User must be logged in to get current user"
         );
       }
-      console.log("RSOLVER USER: ", JSON.stringify(currentUser));
 
       const user = await userModel.findById({ _id: currentUser.id }).exec();
 
       if (!user) {
-        throw new AuthenticationError("User with that ID does not exist");
+        throw new UserInputError("User with that ID does not exist");
       }
 
       return user;
@@ -66,7 +115,7 @@ export const resolvers: Resolvers = {
       const user = await userModel.findById({ _id: userID }).exec();
 
       if (!user) {
-        throw new AuthenticationError("User with that ID does not exist");
+        throw new UserInputError("User with that ID does not exist");
       }
 
       return user;
@@ -83,27 +132,64 @@ export const resolvers: Resolvers = {
   Mutation: {
     createUser: async (
       _,
-      { username, password },
+      { username, password, email },
       { models: { userModel }, secret }
     ) => {
-      const user = await userModel.create({ username, password });
+      const user = await userModel.create({
+        username,
+        password,
+        email,
+        createdAt: `${new Date()}`,
+      });
       return signToken(user, secret);
     },
     createPoem: async (
       _,
-      { title, content, isPrivate },
+      { title, content, isPrivate, id },
       { models: { poemModel }, currentUser }
     ) => {
       if (isNil(currentUser)) {
         throw new AuthenticationError("You are not authenticated");
       }
-      const poem = await poemModel.create({
+
+      if (id) {
+        const retrievedPoem = await poemModel.findById({ _id: id }).exec();
+
+        if (retrievedPoem.authorID != currentUser.id) {
+          throw new AuthenticationError("You are not authenticated");
+        }
+
+        return await poemModel.findOneAndUpdate(
+          { _id: id },
+          { $set: { title, content, isPrivate, lastUpdated: new Date() } },
+          { upsert: true, returnOriginal: true }
+        );
+      }
+
+      return await poemModel.create({
         title,
         content,
         isPrivate: !isNil(isPrivate) ? isPrivate : false,
-        author: currentUser.id,
+        authorID: currentUser.id,
+        author: currentUser.username,
+        removed: false,
+        compliments: 0,
+        createdAt: new Date(),
       });
-      return poem;
+    },
+    complimentPoem: async (_, { poemID }, { models: { poemModel } }) => {
+      await poemModel.findOneAndUpdate(
+        { _id: poemID },
+        { $inc: { compliments: 1 } }
+      );
+      return `Successfully Complimented ${poemID}`;
+    },
+    removePoemByID: async (_, { poemID }, { models: { poemModel } }) => {
+      await poemModel.findOneAndUpdate(
+        { _id: poemID },
+        { $set: { removed: true } }
+      );
+      return `Successfully Removed ${poemID}`;
     },
   },
 };

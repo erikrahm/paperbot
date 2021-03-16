@@ -19,6 +19,7 @@ export const parseWord = (word: string) => {
     word.endsWith("ses") ||
     word.endsWith("y") ||
     (word.endsWith("le") &&
+      word.length > 3 &&
       [...(word[word.length - 3].match(consonetRegex) || [])].length);
   const subtractions = [...word.matchAll(additionalSubtractionRegex)];
   const subtractSyllable =
