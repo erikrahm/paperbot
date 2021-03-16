@@ -1,0 +1,85 @@
+type User {
+  _id: ID!
+  username: String!
+  email: String!
+  createdAt: String!
+}
+
+type Poem {
+  _id: ID!
+  title: String!
+  content: String!
+  isPrivate: Boolean!
+  authorID: String!
+  author: String!
+  createdAt: String!
+  lastUpdated: String
+  compliments: Int!
+}
+
+type BookBase {
+  id: String!
+  title: String!
+  authors: [String!]
+  coverPhoto: String!
+  language: String!
+  averageRating: Int!
+}
+
+type BookPrice {
+  amount: Float!
+  currencyCode: String!
+}
+
+type BookImages {
+  smallThumbnail: String
+  thumbnail: String
+  small: String
+  medium: String
+  large: String
+  extraLarge: String
+}
+
+type Book {
+  id: String!
+  title: String!
+  authors: [String!]
+  coverPhoto: String!
+  language: String!
+  averageRating: Int!
+  etag: String!
+  publisher: String!
+  publishedDate: String!
+  description: String!
+  pageCount: Int!
+  printType: String!
+  mainCategory: String!
+  categories: [String!]
+  ratingsCount: Int!
+  images: BookImages!
+  isEbook: Boolean!
+  listPrice: BookPrice!
+}
+
+type Query {
+  searchBook(searchString: String): [BookBase]
+  getBookByID(id: String): Book
+  getCurrentUser: User!
+  getUserByID(userID: ID!): User!
+  login(username: String!, password: String!): String!
+  getPoemsByAuthor(authorID: ID): [Poem!]
+  getPoemByID(poemID: ID!): Poem!
+  checkUsernameAvailability(username: String!): Boolean!
+}
+
+type Mutation {
+  createUser(username: String!, password: String!, email: String!): String!
+  createPoem(
+    title: String!
+    content: String!
+    isPrivate: Boolean
+    id: ID
+  ): Poem!
+  complimentPoem(poemID: ID!): String!
+  removePoemByID(poemID: ID!): String!
+}
